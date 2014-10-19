@@ -2,27 +2,32 @@ use std::fmt;
 use std::io;
 use std::mem;
 
+/// An object which joins elements that implement Show (specified as an Iterator) with a separator.
 pub struct Joiner<T> where T: fmt::Show {
     sep: T,
 }
 
 impl<T> Joiner<T> where T: fmt::Show {
+    /// Returns a Joiner that automatically places `sep` between consecutive elements.
     pub fn on(sep: T) -> Joiner<T> {
         Joiner {
             sep: sep
         }
     }
 
+    /// Returns a String containing the String representation of each element in `it`, using the previously configured
+    /// separator between each.
     pub fn join<I, T>(&self, mut it: I) -> String 
         where I: Iterator<T>,
               T: fmt::Show {
         match it.next() {
             None => "".to_string(),
             Some(el) => {
-                let mem_per_el = mem::size_of::<T>();
-                let (lower, upper) = it.size_hint();
-                let it_size = upper.unwrap_or(lower);
-                let mut w = io::MemWriter::with_capacity(it_size * mem_per_el);        
+                // Create a MemWriter that will be used to store the intermediate results of writing
+                // each element from the iterator
+                let mut w = io::MemWriter::new();
+
+                // We don't want a separator before the first element
                 (write!(&mut w, "{}", el)).ok().unwrap();
                 for el in it {
                     (write!(&mut w, "{}{}", self.sep, el)).ok().unwrap();
