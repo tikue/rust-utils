@@ -1,6 +1,5 @@
 use std::fmt;
 use std::io;
-use std::mem;
 
 /// An object which joins elements that implement Show (specified as an Iterator) with a separator.
 pub struct Joiner<T> where T: fmt::Show {
